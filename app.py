@@ -50,11 +50,19 @@ def load_model_cached():
         ),
 
         Dense(
+            16,
+            activation="relu"
+        ),
+
+        Dense(
             10,
             activation="softmax"
         )
 
     ])
+
+    # Build model before loading weights
+    model.build((None, 784))
 
     # Load trained weights
     model.load_weights(
@@ -63,7 +71,9 @@ def load_model_cached():
 
     return model
 
-# Load model
+# -----------------------------------
+# Initialize Model
+# -----------------------------------
 model = load_model_cached()
 
 # -----------------------------------
