@@ -177,7 +177,8 @@ if uploaded_file is not None:
             st.image(
                 img,
                 caption="Processed Image",
-                use_container_width=True
+                # use_container_width=True
+                use_column_width=True
             )
 
         # Prediction Results
