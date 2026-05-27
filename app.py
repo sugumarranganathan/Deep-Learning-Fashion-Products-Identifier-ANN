@@ -21,7 +21,7 @@ def load_model_cached():
 
     model_path = os.path.join(
         os.path.dirname(__file__),
-        "fashion_model.h5"
+        "fashion_model_fixed.h5"
     )
 
     # Load legacy .h5 model safely
