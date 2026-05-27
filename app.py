@@ -2,13 +2,7 @@ import streamlit as st
 import numpy as np
 
 from keras.models import Sequential
-
-from keras.layers import (
-    Dense,
-    Input,
-    BatchNormalization,
-    Dropout
-)
+from keras.layers import Dense, Input
 
 from PIL import Image
 
@@ -27,25 +21,22 @@ st.set_page_config(
 @st.cache_resource
 def load_model_cached():
 
-    # Rebuild original ANN architecture
+    # EXACT 7-layer architecture
     model = Sequential([
 
         Input(shape=(784,)),
 
         Dense(512, activation="relu"),
-        BatchNormalization(),
-        Dropout(0.3),
 
         Dense(256, activation="relu"),
-        BatchNormalization(),
-        Dropout(0.3),
 
         Dense(128, activation="relu"),
-        BatchNormalization(),
 
         Dense(64, activation="relu"),
 
         Dense(32, activation="relu"),
+
+        Dense(16, activation="relu"),
 
         Dense(10, activation="softmax")
 
