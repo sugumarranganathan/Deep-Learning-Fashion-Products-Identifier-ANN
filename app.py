@@ -8,7 +8,7 @@ from keras.layers import (
     BatchNormalization
 )
 
-from PIL import Image
+from PIL import Image, ImageOps, ImageFilter
 
 # -----------------------------------
 # Page Configuration
@@ -20,16 +20,16 @@ st.set_page_config(
 )
 
 # -----------------------------------
-# Load ANN Model
+# Load Improved ANN Model
 # -----------------------------------
 @st.cache_resource
 def load_model_cached():
 
-    # ORIGINAL TRAINED MODEL ARCHITECTURE
+    # Improved ANN Architecture
     model = Sequential([
 
         Dense(
-            128,
+            512,
             activation='relu',
             input_shape=(784,)
         ),
@@ -39,7 +39,7 @@ def load_model_cached():
         BatchNormalization(),
 
         Dense(
-            24,
+            256,
             activation='relu'
         ),
 
@@ -48,13 +48,18 @@ def load_model_cached():
         BatchNormalization(),
 
         Dense(
-            24,
+            128,
             activation='relu'
         ),
 
         Dropout(0.3),
 
         BatchNormalization(),
+
+        Dense(
+            64,
+            activation='relu'
+        ),
 
         Dense(
             10,
@@ -63,10 +68,10 @@ def load_model_cached():
 
     ])
 
-    # Build model
+    # Build Model
     model.build((None, 784))
 
-    # Load trained weights
+    # Load Trained Weights
     model.load_weights(
         "fashion_model_fixed.h5"
     )
@@ -125,28 +130,61 @@ if uploaded_file is not None:
 
     try:
 
-        # Open image
+        # -----------------------------------
+        # Open Image
+        # -----------------------------------
         img = Image.open(
             uploaded_file
-        ).convert("L")
+        )
+
+        # Convert to grayscale
+        img = img.convert("L")
+
+        # -----------------------------------
+        # Better Image Processing
+        # -----------------------------------
 
         # Resize image
         img = img.resize((28, 28))
 
-        # Convert image to array
+        # Sharpen image slightly
+        img = img.filter(
+            ImageFilter.SHARPEN
+        )
+
+        # Auto contrast
+        img = ImageOps.autocontrast(img)
+
+        # Convert to numpy array
         img_array = np.array(img)
 
-        # Normalize
-        img_array = img_array / 255.0
+        # -----------------------------------
+        # Normalize Images
+        # -----------------------------------
+        img_array = img_array.astype(
+            "float32"
+        ) / 255.0
 
-        # Auto invert
+        # -----------------------------------
+        # Background Removal Logic
+        # -----------------------------------
+        # Fashion-MNIST uses dark background
+        # so invert if background is white
         if np.mean(img_array) > 0.5:
+
             img_array = 1.0 - img_array
 
-        # Flatten
-        img_array = img_array.reshape(1, 784)
+        # -----------------------------------
+        # Flatten Image
+        # -----------------------------------
+        img_array = img_array.reshape(
+            1,
+            784
+        )
 
+        # -----------------------------------
         # Predict
+        # -----------------------------------
         predictions = model.predict(
             img_array,
             verbose=0
@@ -164,10 +202,14 @@ if uploaded_file is not None:
             pred_idx
         ]
 
+        # -----------------------------------
         # Layout
+        # -----------------------------------
         col1, col2 = st.columns([1, 1])
 
+        # -----------------------------------
         # Image Display
+        # -----------------------------------
         with col1:
 
             st.subheader(
@@ -177,11 +219,12 @@ if uploaded_file is not None:
             st.image(
                 img,
                 caption="Processed Image",
-                # use_container_width=True
                 use_column_width=True
             )
 
+        # -----------------------------------
         # Prediction Results
+        # -----------------------------------
         with col2:
 
             st.subheader(
@@ -203,6 +246,7 @@ if uploaded_file is not None:
                 "📊 Probability Distribution"
             )
 
+            # Probability Bars
             for i, label in enumerate(CLASS_NAMES):
 
                 prob = float(
