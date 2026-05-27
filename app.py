@@ -2,7 +2,11 @@ import streamlit as st
 import numpy as np
 
 from keras.models import Sequential
-from keras.layers import Dense, Input
+from keras.layers import (
+    Dense,
+    Dropout,
+    BatchNormalization
+)
 
 from PIL import Image
 
@@ -21,31 +25,48 @@ st.set_page_config(
 @st.cache_resource
 def load_model_cached():
 
-    # EXACT 7-layer architecture
+    # ORIGINAL TRAINED MODEL ARCHITECTURE
     model = Sequential([
 
-        Input(shape=(784,)),
+        Dense(
+            128,
+            activation='relu',
+            input_shape=(784,)
+        ),
 
-        Dense(512, activation="relu"),
+        Dropout(0.3),
 
-        Dense(256, activation="relu"),
+        BatchNormalization(),
 
-        Dense(128, activation="relu"),
+        Dense(
+            24,
+            activation='relu'
+        ),
 
-        Dense(64, activation="relu"),
+        Dropout(0.3),
 
-        Dense(32, activation="relu"),
+        BatchNormalization(),
 
-        Dense(16, activation="relu"),
+        Dense(
+            24,
+            activation='relu'
+        ),
 
-        Dense(10, activation="softmax")
+        Dropout(0.3),
+
+        BatchNormalization(),
+
+        Dense(
+            10,
+            activation='softmax'
+        )
 
     ])
 
     # Build model
     model.build((None, 784))
 
-    # Load weights
+    # Load trained weights
     model.load_weights(
         "fashion_model_fixed.h5"
     )
