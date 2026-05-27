@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-from tensorflow.keras.models import load_model
+from keras.models import load_model
 from PIL import Image
 import os
 
@@ -24,20 +24,20 @@ def load_model_cached():
         "fashion_model.h5"
     )
 
-    # IMPORTANT FIX
-    # compile=False avoids compatibility issues
-    # with older .h5 models
+    # Load legacy .h5 model safely
     model = load_model(
         model_path,
-        compile=False
+        compile=False,
+        safe_mode=False
     )
 
     return model
 
+# Load model
 model = load_model_cached()
 
 # -----------------------------------
-# Fashion Categories
+# Fashion Product Categories
 # -----------------------------------
 CLASS_NAMES = [
     "T-shirt/top",
@@ -58,14 +58,13 @@ CLASS_NAMES = [
 st.title("👗 Fashion Product Identifier using ANN")
 
 st.markdown("""
-Upload a fashion product image and the AI model
-will predict its clothing category with confidence score.
+Upload a fashion product image and the AI model will predict the clothing category with confidence score.
 """)
 
 st.divider()
 
 # -----------------------------------
-# File Upload
+# Upload Section
 # -----------------------------------
 uploaded_file = st.file_uploader(
     "📤 Upload Clothing Image",
@@ -73,27 +72,27 @@ uploaded_file = st.file_uploader(
 )
 
 # -----------------------------------
-# Prediction Process
+# Prediction Logic
 # -----------------------------------
 if uploaded_file is not None:
 
     try:
 
         # -----------------------------
-        # Image Processing
+        # Open and preprocess image
         # -----------------------------
         img = Image.open(uploaded_file).convert("L")
 
-        # Resize image
+        # Resize image to model input size
         img = img.resize((28, 28))
 
-        # Convert image to numpy array
+        # Convert to array
         img_array = np.array(img)
 
-        # Normalize pixel values
+        # Normalize
         img_array = img_array / 255.0
 
-        # Auto invert for white backgrounds
+        # Auto invert image if needed
         if np.mean(img_array) > 0.5:
             img_array = 1.0 - img_array
 
@@ -101,28 +100,31 @@ if uploaded_file is not None:
         img_array = img_array.reshape(1, 784)
 
         # -----------------------------
-        # Prediction
+        # Make Prediction
         # -----------------------------
         predictions = model.predict(
             img_array,
             verbose=0
         )
 
+        # Get highest probability index
         pred_idx = np.argmax(predictions[0])
 
+        # Confidence score
         confidence = float(
             np.max(predictions[0]) * 100
         )
 
+        # Predicted label
         predicted_label = CLASS_NAMES[pred_idx]
 
         # -----------------------------------
-        # Layout
+        # Layout Columns
         # -----------------------------------
         col1, col2 = st.columns([1, 1])
 
         # -----------------------------------
-        # Uploaded Image
+        # Display Uploaded Image
         # -----------------------------------
         with col1:
 
@@ -135,7 +137,7 @@ if uploaded_file is not None:
             )
 
         # -----------------------------------
-        # Prediction Results
+        # Display Prediction Result
         # -----------------------------------
         with col2:
 
@@ -170,7 +172,7 @@ if uploaded_file is not None:
     except Exception as e:
 
         st.error(
-            f"❌ Error loading model or predicting image: {e}"
+            f"❌ Error: {e}"
         )
 
 # -----------------------------------
