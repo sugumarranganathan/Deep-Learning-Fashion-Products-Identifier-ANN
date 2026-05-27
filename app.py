@@ -1,241 +1,204 @@
-import streamlit as st
-import numpy as np
-from keras.models import Sequential
-from keras.layers import Dense, Input
-from PIL import Image
+[07:50:58] 🐍 Python dependencies were installed from /mount/src/deep-learning-fashion-products-identifier-ann/requirements.txt using uv.
 
-# -----------------------------------
-# Page Configuration
-# -----------------------------------
-st.set_page_config(
-    page_title="Fashion Product Identifier",
-    page_icon="👗",
-    layout="wide"
-)
+Check if streamlit is installed
 
-# -----------------------------------
-# Load ANN Model
-# -----------------------------------
-@st.cache_resource
-def load_model_cached():
+Streamlit is already installed
 
-    # Rebuild original ANN architecture
-    model = Sequential([
+[07:50:59] 📦 Processed dependencies!
 
-        Input(shape=(784,)),
 
-        Dense(
-            512,
-            activation="relu"
-        ),
 
-        Dense(
-            256,
-            activation="relu"
-        ),
 
-        Dense(
-            128,
-            activation="relu"
-        ),
+2026-05-27 07:51:38.410938: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
 
-        Dense(
-            64,
-            activation="relu"
-        ),
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
 
-        Dense(
-            32,
-            activation="relu"
-        ),
+────────────────────── Traceback (most recent call last) ───────────────────────
 
-        Dense(
-            16,
-            activation="relu"
-        ),
+  /home/adminuser/venv/lib/python3.10/site-packages/streamlit/runtime/scriptru  
 
-        Dense(
-            10,
-            activation="softmax"
-        )
+  nner/script_runner.py:600 in _run_script                                      
 
-    ])
+                                                                                
 
-    # Build model before loading weights
-    model.build((None, 784))
+  /mount/src/deep-learning-fashion-products-identifier-ann/app.py:77 in         
 
-    # Load trained weights
-    model.load_weights(
-        "fashion_model_fixed.h5"
-    )
+  <module>                                                                      
 
-    return model
+                                                                                
 
-# -----------------------------------
-# Initialize Model
-# -----------------------------------
-model = load_model_cached()
+     74 # -----------------------------------                                   
 
-# -----------------------------------
-# Fashion Product Labels
-# -----------------------------------
-CLASS_NAMES = [
+     75 # Initialize Model                                                      
 
-    "T-shirt/top",
-    "Trouser",
-    "Pullover",
-    "Dress",
-    "Coat",
-    "Sandal",
-    "Shirt",
-    "Sneaker",
-    "Bag",
-    "Ankle boot"
+     76 # -----------------------------------                                   
 
-]
+  ❱  77 model = load_model_cached()                                             
 
-# -----------------------------------
-# Header
-# -----------------------------------
-st.title(
-    "👗 Fashion Product Identifier using ANN"
-)
+     78                                                                         
 
-st.markdown("""
-Upload a fashion product image and the AI model
-will predict the clothing category with confidence score.
-""")
+     79 # -----------------------------------                                   
 
-st.divider()
+     80 # Fashion Product Labels                                                
 
-# -----------------------------------
-# Upload Section
-# -----------------------------------
-uploaded_file = st.file_uploader(
-    "📤 Upload Clothing Image",
-    type=["jpg", "jpeg", "png"]
-)
+                                                                                
 
-# -----------------------------------
-# Prediction Section
-# -----------------------------------
-if uploaded_file is not None:
+  /home/adminuser/venv/lib/python3.10/site-packages/streamlit/runtime/caching/  
 
-    try:
+  cache_utils.py:165 in wrapper                                                 
 
-        # -----------------------------
-        # Open image
-        # -----------------------------
-        img = Image.open(
-            uploaded_file
-        ).convert("L")
+                                                                                
 
-        # Resize image
-        img = img.resize((28, 28))
+    162 │                                                                       
 
-        # Convert image to array
-        img_array = np.array(img)
+    163 │   @functools.wraps(info.func)                                         
 
-        # Normalize pixel values
-        img_array = img_array / 255.0
+    164 │   def wrapper(*args, **kwargs):                                       
 
-        # Auto invert image
-        if np.mean(img_array) > 0.5:
-            img_array = 1.0 - img_array
+  ❱ 165 │   │   return cached_func(*args, **kwargs)                             
 
-        # Flatten image
-        img_array = img_array.reshape(1, 784)
+    166 │                                                                       
 
-        # -----------------------------
-        # Predict
-        # -----------------------------
-        predictions = model.predict(
-            img_array,
-            verbose=0
-        )
+    167 │   # Give our wrapper its `clear` function.                            
 
-        pred_idx = np.argmax(
-            predictions[0]
-        )
+    168 │   # (This results in a spurious mypy error that we suppress.)         
 
-        confidence = float(
-            np.max(predictions[0]) * 100
-        )
+                                                                                
 
-        predicted_label = CLASS_NAMES[
-            pred_idx
-        ]
+  /home/adminuser/venv/lib/python3.10/site-packages/streamlit/runtime/caching/  
 
-        # -----------------------------------
-        # Layout
-        # -----------------------------------
-        col1, col2 = st.columns([1, 1])
+  cache_utils.py:194 in __call__                                                
 
-        # -----------------------------------
-        # Image Display
-        # -----------------------------------
-        with col1:
+                                                                                
 
-            st.subheader(
-                "🖼 Uploaded Image"
-            )
+    191 │   │                                                                   
 
-            st.image(
-                img,
-                caption="Processed Image",
-                use_container_width=True
-            )
+    192 │   │   if self._info.show_spinner or isinstance(self._info.show_spinn  
 
-        # -----------------------------------
-        # Prediction Results
-        # -----------------------------------
-        with col2:
+    193 │   │   │   with spinner(message, _cache=True):                         
 
-            st.subheader(
-                "🎯 Prediction Result"
-            )
+  ❱ 194 │   │   │   │   return self._get_or_create_cached_value(args, kwargs)   
 
-            st.success(
-                f"Predicted Product: {predicted_label}"
-            )
+    195 │   │   else:                                                           
 
-            st.metric(
-                label="Confidence Score",
-                value=f"{confidence:.2f}%"
-            )
+    196 │   │   │   return self._get_or_create_cached_value(args, kwargs)       
 
-            st.divider()
+    197                                                                         
 
-            st.subheader(
-                "📊 Probability Distribution"
-            )
+                                                                                
 
-            # Probability Bars
-            for i, label in enumerate(CLASS_NAMES):
+  /home/adminuser/venv/lib/python3.10/site-packages/streamlit/runtime/caching/  
 
-                prob = float(
-                    predictions[0][i] * 100
-                )
+  cache_utils.py:221 in _get_or_create_cached_value                             
 
-                st.write(
-                    f"**{label}** — {prob:.2f}%"
-                )
+                                                                                
 
-                st.progress(
-                    prob / 100
-                )
+    218 │   │   │   return self._handle_cache_hit(cached_result)                
 
-    except Exception as e:
+    219 │   │   except CacheKeyNotFoundError:                                   
 
-        st.error(
-            f"❌ Error: {e}"
-        )
+    220 │   │   │   pass                                                        
 
-# -----------------------------------
-# Footer
-# -----------------------------------
-st.divider()
+  ❱ 221 │   │   return self._handle_cache_miss(cache, value_key, func_args, fu  
 
-st.caption(
-    "AI-powered Fashion Product Classification Web Application using Artificial Neural Networks (ANN)"
-)
+    222 │                                                                       
+
+    223 │   def _handle_cache_hit(self, result: CachedResult) -> Any:           
+
+    224 │   │   """Handle a cache hit: replay the result's cached messages, an  
+
+                                                                                
+
+  /home/adminuser/venv/lib/python3.10/site-packages/streamlit/runtime/caching/  
+
+  cache_utils.py:277 in _handle_cache_miss                                      
+
+                                                                                
+
+    274 │   │   │   with self._info.cached_message_replay_ctx.calling_cached_f  
+
+    275 │   │   │   │   self._info.func, self._info.allow_widgets               
+
+    276 │   │   │   ):                                                          
+
+  ❱ 277 │   │   │   │   computed_value = self._info.func(*func_args, **func_kw  
+
+    278 │   │   │                                                               
+
+    279 │   │   │   # We've computed our value, and now we need to write it ba  
+
+    280 │   │   │   # along with any "replay messages" that were generated dur  
+
+                                                                                
+
+  /mount/src/deep-learning-fashion-products-identifier-ann/app.py:68 in         
+
+  load_model_cached                                                             
+
+                                                                                
+
+     65 │   model.build((None, 784))                                            
+
+     66 │                                                                       
+
+     67 │   # Load trained weights                                              
+
+  ❱  68 │   model.load_weights(                                                 
+
+     69 │   │   "fashion_model_fixed.h5"                                        
+
+     70 │   )                                                                   
+
+     71                                                                         
+
+                                                                                
+
+  /home/adminuser/venv/lib/python3.10/site-packages/keras/utils/traceback_util  
+
+  s.py:70 in error_handler                                                      
+
+                                                                                
+
+     67 │   │   │   filtered_tb = _process_traceback_frames(e.__traceback__)    
+
+     68 │   │   │   # To get the full stack trace, call:                        
+
+     69 │   │   │   # `tf.debugging.disable_traceback_filtering()`              
+
+  ❱  70 │   │   │   raise e.with_traceback(filtered_tb) from None               
+
+     71 │   │   finally:                                                        
+
+     72 │   │   │   del filtered_tb                                             
+
+     73                                                                         
+
+                                                                                
+
+  /home/adminuser/venv/lib/python3.10/site-packages/keras/saving/legacy/hdf5_f  
+
+  ormat.py:826 in load_weights_from_hdf5_group                                  
+
+                                                                                
+
+     823 │   │   │   layer, weight_values, original_keras_version, original_ba  
+
+     824 │   │   )                                                              
+
+     825 │   │   if len(weight_values) != len(symbolic_weights):                
+
+  ❱  826 │   │   │   raise ValueError(                                          
+
+     827 │   │   │   │   f"Weight count mismatch for layer #{k} (named {layer.  
+
+     828 │   │   │   │   f"the current model, {name} in the save file). "       
+
+     829 │   │   │   │   f"Layer expects {len(symbolic_weights)} weight(s). Re  
+
+────────────────────────────────────────────────────────────────────────────────
+
+ValueError: Weight count mismatch for layer #1 (named dense_1 in the current 
+
+model, batch_normalization in the save file). Layer expects 2 weight(s). 
+
+Received 4 saved weight(s)
