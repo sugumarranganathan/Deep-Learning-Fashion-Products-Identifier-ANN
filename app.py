@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
-from keras.models import load_model
+from keras.models import Sequential
+from keras.layers import Dense, Input
 from PIL import Image
 import os
 
@@ -14,21 +15,36 @@ st.set_page_config(
 )
 
 # -----------------------------------
-# Load Trained ANN Model
+# Load ANN Model
 # -----------------------------------
 @st.cache_resource
 def load_model_cached():
 
-    model_path = os.path.join(
-        os.path.dirname(__file__),
-        "fashion_model_fixed.h5"
-    )
+    # Rebuild ANN architecture manually
+    model = Sequential([
 
-    # Load legacy .h5 model safely
-    model = load_model(
-        model_path,
-        compile=False,
-        safe_mode=False
+        Input(shape=(784,)),
+
+        Dense(
+            128,
+            activation="relu"
+        ),
+
+        Dense(
+            64,
+            activation="relu"
+        ),
+
+        Dense(
+            10,
+            activation="softmax"
+        )
+
+    ])
+
+    # Load trained weights
+    model.load_weights(
+        "fashion_model_fixed.h5"
     )
 
     return model
@@ -37,9 +53,10 @@ def load_model_cached():
 model = load_model_cached()
 
 # -----------------------------------
-# Fashion Product Categories
+# Fashion Product Labels
 # -----------------------------------
 CLASS_NAMES = [
+
     "T-shirt/top",
     "Trouser",
     "Pullover",
@@ -50,15 +67,19 @@ CLASS_NAMES = [
     "Sneaker",
     "Bag",
     "Ankle boot"
+
 ]
 
 # -----------------------------------
-# App Header
+# Header
 # -----------------------------------
-st.title("👗 Fashion Product Identifier using ANN")
+st.title(
+    "👗 Fashion Product Identifier using ANN"
+)
 
 st.markdown("""
-Upload a fashion product image and the AI model will predict the clothing category with confidence score.
+Upload a fashion product image and the AI model
+will predict the clothing category with confidence score.
 """)
 
 st.divider()
@@ -72,27 +93,29 @@ uploaded_file = st.file_uploader(
 )
 
 # -----------------------------------
-# Prediction Logic
+# Prediction Section
 # -----------------------------------
 if uploaded_file is not None:
 
     try:
 
         # -----------------------------
-        # Open and preprocess image
+        # Open image
         # -----------------------------
-        img = Image.open(uploaded_file).convert("L")
+        img = Image.open(
+            uploaded_file
+        ).convert("L")
 
-        # Resize image to model input size
+        # Resize image
         img = img.resize((28, 28))
 
-        # Convert to array
+        # Convert image to array
         img_array = np.array(img)
 
-        # Normalize
+        # Normalize pixel values
         img_array = img_array / 255.0
 
-        # Auto invert image if needed
+        # Auto invert image
         if np.mean(img_array) > 0.5:
             img_array = 1.0 - img_array
 
@@ -100,35 +123,38 @@ if uploaded_file is not None:
         img_array = img_array.reshape(1, 784)
 
         # -----------------------------
-        # Make Prediction
+        # Predict
         # -----------------------------
         predictions = model.predict(
             img_array,
             verbose=0
         )
 
-        # Get highest probability index
-        pred_idx = np.argmax(predictions[0])
+        pred_idx = np.argmax(
+            predictions[0]
+        )
 
-        # Confidence score
         confidence = float(
             np.max(predictions[0]) * 100
         )
 
-        # Predicted label
-        predicted_label = CLASS_NAMES[pred_idx]
+        predicted_label = CLASS_NAMES[
+            pred_idx
+        ]
 
         # -----------------------------------
-        # Layout Columns
+        # Layout
         # -----------------------------------
         col1, col2 = st.columns([1, 1])
 
         # -----------------------------------
-        # Display Uploaded Image
+        # Image Display
         # -----------------------------------
         with col1:
 
-            st.subheader("🖼 Uploaded Image")
+            st.subheader(
+                "🖼 Uploaded Image"
+            )
 
             st.image(
                 img,
@@ -137,11 +163,13 @@ if uploaded_file is not None:
             )
 
         # -----------------------------------
-        # Display Prediction Result
+        # Prediction Results
         # -----------------------------------
         with col2:
 
-            st.subheader("🎯 Prediction Result")
+            st.subheader(
+                "🎯 Prediction Result"
+            )
 
             st.success(
                 f"Predicted Product: {predicted_label}"
@@ -154,9 +182,11 @@ if uploaded_file is not None:
 
             st.divider()
 
-            st.subheader("📊 Probability Distribution")
+            st.subheader(
+                "📊 Probability Distribution"
+            )
 
-            # Probability bars
+            # Probability Bars
             for i, label in enumerate(CLASS_NAMES):
 
                 prob = float(
@@ -167,7 +197,9 @@ if uploaded_file is not None:
                     f"**{label}** — {prob:.2f}%"
                 )
 
-                st.progress(prob / 100)
+                st.progress(
+                    prob / 100
+                )
 
     except Exception as e:
 
