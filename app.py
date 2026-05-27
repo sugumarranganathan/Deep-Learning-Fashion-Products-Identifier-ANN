@@ -3,7 +3,6 @@ import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, Input
 from PIL import Image
-import os
 
 # -----------------------------------
 # Page Configuration
@@ -20,10 +19,20 @@ st.set_page_config(
 @st.cache_resource
 def load_model_cached():
 
-    # Rebuild ANN architecture manually
+    # Rebuild original ANN architecture
     model = Sequential([
 
         Input(shape=(784,)),
+
+        Dense(
+            512,
+            activation="relu"
+        ),
+
+        Dense(
+            256,
+            activation="relu"
+        ),
 
         Dense(
             128,
@@ -32,6 +41,11 @@ def load_model_cached():
 
         Dense(
             64,
+            activation="relu"
+        ),
+
+        Dense(
+            32,
             activation="relu"
         ),
 
